@@ -4,62 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assistentes Virtuais na EaD: Criando Seu Próprio Tutor com NotebookLM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #222;
-            background-color: #6B8E23;
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #ecfdf5;
+            --accent: #047857;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --bg-body: #f4fbf7;
+            --bg-card: #ffffff;
+            --border-color: #d1fae5;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding-bottom: 3rem;
+        }
+
         header {
-            background-color: #9ACD32;
+            background: linear-gradient(135deg, #065f46 0%, #047857 50%, #10b981 100%);
             color: white;
-            padding: 2rem 1rem;
+            padding: 3.5rem 1rem;
             text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+
         header h1 {
-            margin: 0 0 0.5rem 0;
-            font-size: 2rem;
+            font-size: 2.25rem;
+            font-weight: 700;
+            max-width: 900px;
+            margin: 0 auto 1rem auto;
+            letter-spacing: -0.025em;
         }
-        header p {
-            margin: 0;
-            font-size: 1.1rem;
-            opacity: 0.9;
+
+        .author-badge {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
         }
+
         main {
-            max-width: 800px;
-            margin: 2rem auto;
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: -2rem auto 0 auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 10;
         }
-        section {
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2.5rem;
             margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            border: 1px solid var(--border-color);
         }
+
         h2 {
-            color: #6B8E23;
-            border-bottom: 2px solid #eef;
-            padding-bottom: 0.5rem;
-            margin-top: 1.5rem;
+            color: var(--accent);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 24px;
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
         ul {
-            padding-left: 1.5rem;
+            list-style-type: none;
+            padding-left: 0;
         }
+
         li {
-            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-muted);
+            font-size: 1.05rem;
         }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* Proporção 16:9 */
+            padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
             background: #000;
-            border-radius: 6px;
-            margin-top: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
+
         .video-container iframe {
             position: absolute;
             top: 0;
@@ -68,26 +140,49 @@
             height: 100%;
             border: 0;
         }
+
+        .cta-box {
+            text-align: center;
+            background: linear-gradient(to bottom, #ffffff, var(--primary-light));
+        }
+
         .btn-quiz {
             display: inline-block;
-            background-color: #28a745;
+            background-color: var(--primary);
             color: white;
-            padding: 0.75rem 1.5rem;
+            padding: 1rem 2.5rem;
             text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
             margin-top: 1rem;
-            transition: background 0.2s;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s ease-in-out;
         }
+
         .btn-quiz:hover {
-            background-color: #218838;
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(5, 150, 105, 0.4);
         }
+
         footer {
             text-align: center;
-            padding: 1.5rem;
+            padding: 2rem;
             font-size: 0.9rem;
-            color: #666;
-            background-color: #eee;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+
+        a.reference-link {
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a.reference-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -95,39 +190,39 @@
 
     <header>
         <h1>Assistentes Virtuais na EaD: Criando Seu Próprio Tutor com NotebookLM</h1>
-        <p>Autor: <strong>Flávia Borges</strong></p>
+        <div class="author-badge">Autor: Flávia Borges</div>
     </header>
 
     <main>
-        <section>
+        <section class="card">
             <h2>Apresentação do Minicurso</h2>
-            <p>Este minicurso prático aborda como configurar assistentes virtuais baseados em inteligência artificial para otimizar o atendimento a dúvidas de estudantes na Educação a Distância (EaD), utilizando curadoria de materiais oficiais.</p>
+            <p>Este minicurso prático e individual aborda como configurar assistentes virtuais baseados em inteligência artificial para otimizar o atendimento a dúvidas de estudantes na Educação a Distância (EaD), utilizando rigorosa curadoria de materiais oficiais.</p>
         </section>
 
-        <section>
+        <section class="card">
             <h2>Público-Alvo</h2>
             <p>Professores, tutores, educadores e estudantes de licenciaturas ou tecnologias educacionais interessados em inovação pedagógica com IA.</p>
         </section>
 
-        <section>
+        <section class="card">
             <h2>Conhecimentos Prévios Necessários</h2>
             <ul>
                 <li>Familiaridade básica com navegação na web e ferramentas em nuvem.</li>
-                <li>Noções fundamentais sobre organização de arquivos de texto e PDFs.</li>
+                <li>Noções fundamentais sobre organização de arquivos de texto e PDFs de estudo.</li>
             </ul>
         </section>
 
-        <section>
+        <section class="card">
             <h2>Objetivos de Aprendizagem</h2>
             <ul>
                 <li>Compreender o papel dos assistentes virtuais baseados em recuperação de contexto (RAG) na EaD.</li>
-                <li>Selecionar e estruturar bases de conhecimento documentais adequadas.</li>
+                <li>Selecionar e estruturar bases de conhecimento documentais adequadas para o ensino.</li>
                 <li>Configurar, treinar e testar um assistente virtual utilizando o NotebookLM.</li>
-                <li>Gerenciar limitações de respostas e mitigar alucinações da IA.</li>
+                <li>Gerenciar limitações de respostas e mitigar alucinações da inteligência artificial.</li>
             </ul>
         </section>
 
-        <section>
+        <section class="card">
             <h2>Vídeo do Minicurso</h2>
             <p>Assista à videoaula completa (com identificação pessoal e legendas revisadas) abaixo:</p>
             <div class="video-container">
@@ -136,17 +231,17 @@
             </div>
         </section>
 
-        <section>
+        <section class="card cta-box">
             <h2>Avaliação Interativa</h2>
-            <p>Teste seus conhecimentos respondendo ao quiz interativo elaborado para fixar os conceitos abordados no minicurso:</p>
+            <p>Teste seus conhecimentos respondendo ao quiz interativo elaborado para fixar os conceitos abordados:</p>
             <!-- Substitua o link '#' pelo link da sua atividade no Genially -->
             <a href="#" target="_blank" class="btn-quiz">Acessar Avaliação Interativa</a>
         </section>
 
-        <section>
+        <section class="card">
             <h2>Referências</h2>
             <ul>
-                <li>GOOGLE. <strong>NotebookLM: Guide & Overview</strong>. Disponível em: <a href="https://notebooklm.google.com" target="_blank">notebooklm.google.com</a>. Acesso em: 2026.</li>
+                <li>GOOGLE. <strong>NotebookLM: Guide & Overview</strong>. Disponível em: <a href="https://notebooklm.google.com" target="_blank" class="reference-link">notebooklm.google.com</a>. Acesso em: 2026.</li>
                 <li>MORAN, José. <strong>Metodologias ativas para uma aprendizagem mais profunda</strong>. Educação a Distância, 2024.</li>
             </ul>
         </section>
